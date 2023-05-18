@@ -1,0 +1,66 @@
+parameters:
+- name: workitem
+  displayName: workitem
+  type: string
+  default: 
+- name: devdest
+  displayName: dev_destination
+  type: string
+  default: D:/Code/API Framework/Published - RUNNING/CustomDLL/
+- name: proddest1
+  displayName: crm8pdapp1vmsrv_destination
+  type: string
+  default: E:/IntegrationFrameworkPublished/CustomDLL/
+- name: proddest
+  displayName: prod_destination
+  type: string
+  default: D:/IntegrationFrameworkPublished/CustomDLL/
+
+trigger:
+- none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'inline'
+    script: |
+      import requests
+      import json
+      wiurl = 'https://dev.azure.com/test123org/devopsproj/_apis/wit/workitems/${{ parameters.workitem }}?api-version=5.0&$expand=all'
+      
+      #use the 'auth' parameter to send requests with HTTP Basic Auth:
+      workitem = requests.get(wiurl, auth = ('', '$(pat)'))
+      
+      print(workitem.status_code)
+      print(workitem.json())
+      json_data = workitem.json()
+      for i in json_data['relations']:
+            attachmenturl = i['url']
+            name = i['attributes']['name']
+            print(attachmenturl)
+            print(name)
+            attachment = requests.get(attachmenturl, auth = ('', '$(pat)'))
+            open(name, 'wb').write(attachment.content)
+- task: CmdLine@2
+  inputs:
+    script: |
+      echo ${{ parameters.workitem }} > workitem.txt
+      echo ${{ parameters.devdest }} > devdest.txt
+      echo ${{ parameters.proddest }} > proddest.txt
+      echo ${{ parameters.proddest1 }} > proddest1.txt
+      cp $(Build.SourcesDirectory)/*.txt $(Build.ArtifactStagingDirectory)
+      cp $(Build.SourcesDirectory)/*.dll  $(Build.BinariesDirectory)
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.BinariesDirectory)'
+    ArtifactName: 'target'
+    publishLocation: 'Container'
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'params'
+    publishLocation: 'pipeline'
+    
