@@ -10,4 +10,4 @@ Release pipeline:
 Set the output of the file as a variable (destination)  and use it in next task (screenshot attached)
 
 Note:
-Pat token to be added as a variable in build pipeline 
+Pat token to be added as a variable in build pipeline .
