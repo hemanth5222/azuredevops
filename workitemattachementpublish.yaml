@@ -8,7 +8,7 @@ parameters:
   type: string
   default: D:/Code/API Framework/Published - RUNNING/CustomDLL/
 - name: proddest1
-  displayName: crm8pdapp1vmsrv_destination
+  displayName: destination
   type: string
   default: E:/IntegrationFrameworkPublished/CustomDLL/
 - name: proddest
